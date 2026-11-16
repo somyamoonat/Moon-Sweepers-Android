@@ -1,0 +1,88 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/depot_3d.gd" id="1_depot"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_pad"]
+albedo_color = Color(0.18, 0.2, 0.26, 1)
+metallic = 0.5
+roughness = 0.4
+
+[sub_resource type="BoxMesh" id="BoxMesh_pad"]
+material = SubResource("StandardMaterial3D_pad")
+size = Vector3(6, 0.3, 6)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_pad_col"]
+size = Vector3(6, 0.3, 6)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_tower"]
+albedo_color = Color(0.85, 0.88, 0.95, 1)
+metallic = 0.2
+roughness = 0.3
+
+[sub_resource type="BoxMesh" id="BoxMesh_tower"]
+material = SubResource("StandardMaterial3D_tower")
+size = Vector3(1.4, 3.4, 1.4)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_tower_col"]
+size = Vector3(1.4, 3.4, 1.4)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_holo"]
+transparency = 1
+albedo_color = Color(0.1, 0.85, 1, 0.6)
+emission_enabled = true
+emission = Color(0.1, 0.85, 1, 1)
+emission_energy_multiplier = 1.5
+
+[sub_resource type="TorusMesh" id="TorusMesh_holo"]
+material = SubResource("StandardMaterial3D_holo")
+inner_radius = 1.6
+outer_radius = 2.0
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_intake"]
+height = 2.0
+radius = 2.2
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_dock"]
+height = 2.5
+radius = 4.5
+
+[node name="Depot3D" type="Node3D"]
+script = ExtResource("1_depot")
+
+[node name="BasePad" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.15, 0)
+mesh = SubResource("BoxMesh_pad")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="BasePad"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="BasePad/StaticBody3D"]
+shape = SubResource("BoxShape3D_pad_col")
+
+[node name="TerminalTower" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.85, -2.2)
+mesh = SubResource("BoxMesh_tower")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="TerminalTower"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="TerminalTower/StaticBody3D"]
+shape = SubResource("BoxShape3D_tower_col")
+
+[node name="IntakeArea" type="Area3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0.5)
+collision_layer = 0
+collision_mask = 4
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="IntakeArea"]
+shape = SubResource("CylinderShape3D_intake")
+
+[node name="HoloRing" type="MeshInstance3D" parent="IntakeArea"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.15, 0)
+mesh = SubResource("TorusMesh_holo")
+
+[node name="DockArea" type="Area3D" parent="."]
+collision_layer = 0
+collision_mask = 2
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="DockArea"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.25, 0)
+shape = SubResource("CylinderShape3D_dock")

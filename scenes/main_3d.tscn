@@ -1,0 +1,330 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/main_3d.gd" id="1_main3d"]
+[ext_resource type="PackedScene" path="res://scenes/lunar_terrain_3d.tscn" id="2_terrain"]
+[ext_resource type="PackedScene" path="res://scenes/depot_3d.tscn" id="3_depot"]
+[ext_resource type="PackedScene" path="res://scenes/player_3d.tscn" id="4_player"]
+[ext_resource type="PackedScene" path="res://scenes/mobile_controls_3d.tscn" id="5_controls"]
+[ext_resource type="PackedScene" path="res://scenes/shop_panel.tscn" id="6_shop"]
+[ext_resource type="PackedScene" path="res://scenes/settings_panel.tscn" id="7_settings"]
+
+[sub_resource type="Environment" id="Environment_space"]
+background_mode = 1
+background_color = Color(0.0156863, 0.0196078, 0.0352941, 1)
+ambient_light_source = 2
+ambient_light_color = Color(0.24, 0.26, 0.32, 1)
+ambient_light_energy = 0.8
+tonemap_mode = 2
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_moneypill"]
+bg_color = Color(0.137255, 0.160784, 0.231373, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.960784, 0.74902, 0.239216, 1)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_shopbtn"]
+bg_color = Color(0.180392, 0.298039, 0.478431, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.352941, 0.54902, 0.819608, 1)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_settingsbtn"]
+bg_color = Color(0.18, 0.2, 0.26, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.38, 0.42, 0.52, 1)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_warning"]
+bg_color = Color(0.55, 0.12, 0.14, 0.95)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.95, 0.3, 0.3, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_dockbtn"]
+bg_color = Color(0.129412, 0.52, 0.3, 0.95)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.35, 0.95, 0.6, 1)
+corner_radius_top_left = 20
+corner_radius_top_right = 20
+corner_radius_bottom_right = 20
+corner_radius_bottom_left = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_banner"]
+bg_color = Color(0.109804, 0.470588, 0.282353, 0.98)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0.3, 0.9, 0.55, 1)
+corner_radius_top_left = 20
+corner_radius_top_right = 20
+corner_radius_bottom_right = 20
+corner_radius_bottom_left = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_nextbtn"]
+bg_color = Color(0.08, 0.28, 0.18, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.4, 0.95, 0.65, 1)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
+
+[node name="Main3D" type="Node3D"]
+script = ExtResource("1_main3d")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_space")
+
+[node name="SunLight" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.866025, -0.353553, 0.353553, 0, 0.707107, 0.707107, -0.5, -0.612372, 0.612372, 0, 20, 0)
+light_color = Color(1, 0.98, 0.94, 1)
+light_energy = 1.3
+shadow_enabled = true
+directional_shadow_max_distance = 60.0
+
+[node name="LunarTerrain3D" parent="." instance=ExtResource("2_terrain")]
+
+[node name="Depot3D" parent="." instance=ExtResource("3_depot")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -8)
+
+[node name="Player3D" parent="." instance=ExtResource("4_player")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="MobileControls3D" parent="CanvasLayer" instance=ExtResource("5_controls")]
+player_path = NodePath("../../Player3D")
+
+[node name="HUD" type="Control" parent="CanvasLayer"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="TopBar" type="VBoxContainer" parent="CanvasLayer/HUD"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 40.0
+offset_top = 40.0
+offset_right = -40.0
+offset_bottom = 440.0
+grow_horizontal = 2
+mouse_filter = 2
+theme_override_constants/separation = 10
+
+[node name="HeaderRow" type="HBoxContainer" parent="CanvasLayer/HUD/TopBar"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="TitleLabel" type="Label" parent="CanvasLayer/HUD/TopBar/HeaderRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 36
+text = "MOON SWEEPERS 3D"
+
+[node name="RightControls" type="HBoxContainer" parent="CanvasLayer/HUD/TopBar/HeaderRow"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="MoneyPill" type="PanelContainer" parent="CanvasLayer/HUD/TopBar/HeaderRow/RightControls"]
+custom_minimum_size = Vector2(160, 60)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_moneypill")
+
+[node name="Margin" type="MarginContainer" parent="CanvasLayer/HUD/TopBar/HeaderRow/RightControls/MoneyPill"]
+layout_mode = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_right = 14
+
+[node name="HBox" type="HBoxContainer" parent="CanvasLayer/HUD/TopBar/HeaderRow/RightControls/MoneyPill/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 6
+alignment = 1
+
+[node name="CoinIcon" type="Label" parent="CanvasLayer/HUD/TopBar/HeaderRow/RightControls/MoneyPill/Margin/HBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+text = "🪙"
+
+[node name="MoneyLabel" type="Label" parent="CanvasLayer/HUD/TopBar/HeaderRow/RightControls/MoneyPill/Margin/HBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.886275, 0.407843, 1)
+theme_override_font_sizes/font_size = 28
+text = "$0"
+
+[node name="ShopBtn" type="Button" parent="CanvasLayer/HUD/TopBar/HeaderRow/RightControls"]
+custom_minimum_size = Vector2(130, 60)
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+theme_override_styles/normal = SubResource("StyleBoxFlat_shopbtn")
+text = "🛒 SHOP"
+
+[node name="SettingsBtn" type="Button" parent="CanvasLayer/HUD/TopBar/HeaderRow/RightControls"]
+custom_minimum_size = Vector2(68, 60)
+layout_mode = 2
+theme_override_font_sizes/font_size = 26
+theme_override_styles/normal = SubResource("StyleBoxFlat_settingsbtn")
+text = "⚙️"
+
+[node name="SectorInfoLabel" type="Label" parent="CanvasLayer/HUD/TopBar"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.68, 0.74, 0.88, 1)
+theme_override_font_sizes/font_size = 26
+text = "Sector 01: Mare Tranquillitatis  •  Cleared: 0"
+
+[node name="CleanPercentageLabel" type="Label" parent="CanvasLayer/HUD/TopBar"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.407843, 0.811765, 1, 1)
+theme_override_font_sizes/font_size = 30
+text = "Sector Clean: 0.0%"
+
+[node name="CleanProgressBar" type="ProgressBar" parent="CanvasLayer/HUD/TopBar"]
+custom_minimum_size = Vector2(0, 22)
+layout_mode = 2
+mouse_filter = 2
+show_percentage = false
+
+[node name="DustStorageBox" type="VBoxContainer" parent="CanvasLayer/HUD/TopBar"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="DustLabel" type="Label" parent="CanvasLayer/HUD/TopBar/DustStorageBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.78, 0.6, 1)
+theme_override_font_sizes/font_size = 28
+text = "Hopper: 0 / 100 kg"
+
+[node name="DustProgressBar" type="ProgressBar" parent="CanvasLayer/HUD/TopBar/DustStorageBox"]
+custom_minimum_size = Vector2(0, 24)
+layout_mode = 2
+mouse_filter = 2
+show_percentage = false
+
+[node name="StorageWarning" type="Panel" parent="CanvasLayer/HUD/TopBar/DustStorageBox"]
+visible = false
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_warning")
+
+[node name="WarningLabel" type="Label" parent="CanvasLayer/HUD/TopBar/DustStorageBox/StorageWarning"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 24
+text = "⚠️ Storage full! Pack capsules or visit Depot."
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="DepotSellBtn" type="Button" parent="CanvasLayer/HUD"]
+visible = false
+custom_minimum_size = Vector2(500, 96)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -250.0
+offset_top = 180.0
+offset_right = 250.0
+offset_bottom = 276.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 28
+theme_override_styles/normal = SubResource("StyleBoxFlat_dockbtn")
+text = "🛸 DEPOT DOCK: SELL DUST (+$0)"
+
+[node name="FloatingTextSpawn" type="Marker2D" parent="CanvasLayer/HUD"]
+position = Vector2(540, 960)
+
+[node name="CompletionBanner" type="Panel" parent="CanvasLayer/HUD"]
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -380.0
+offset_top = -140.0
+offset_right = 380.0
+offset_bottom = 140.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_banner")
+
+[node name="VBox" type="VBoxContainer" parent="CanvasLayer/HUD/CompletionBanner"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="Label" type="Label" parent="CanvasLayer/HUD/CompletionBanner/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 34
+text = "★ SECTOR COMPLETE! ★
+Cleaned 95%+ • Bonus: +$75"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="NextSectorButton" type="Button" parent="CanvasLayer/HUD/CompletionBanner/VBox"]
+custom_minimum_size = Vector2(420, 76)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_font_sizes/font_size = 32
+theme_override_styles/normal = SubResource("StyleBoxFlat_nextbtn")
+text = "NEXT SECTOR ➔"
+
+[node name="ShopPanel" parent="CanvasLayer" instance=ExtResource("6_shop")]
+visible = false
+
+[node name="SettingsPanel" parent="CanvasLayer" instance=ExtResource("7_settings")]
+visible = false
+
+[connection signal="pressed" from="CanvasLayer/HUD/TopBar/HeaderRow/RightControls/ShopBtn" to="." method="_on_shop_button_pressed"]
+[connection signal="pressed" from="CanvasLayer/HUD/TopBar/HeaderRow/RightControls/SettingsBtn" to="." method="_on_settings_button_pressed"]
+[connection signal="pressed" from="CanvasLayer/HUD/DepotSellBtn" to="." method="_on_depot_sell_pressed"]
+[connection signal="pressed" from="CanvasLayer/HUD/CompletionBanner/VBox/NextSectorButton" to="." method="_on_next_sector_pressed"]

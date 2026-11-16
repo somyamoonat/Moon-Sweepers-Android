@@ -1,6 +1,6 @@
 extends Control
 
-## Main Menu Controller for Moon Sweepers
+## Main Menu Controller for Moon Sweepers 3D
 
 @onready var mission_label: Label = $HUD/CenterBox/SectorPill/Margin/MissionLabel
 @onready var settings_panel = $SettingsPanel
@@ -23,8 +23,8 @@ func _on_play_button_pressed() -> void:
 	_animate_button_punch($HUD/CenterBox/PlayBtn)
 	if has_node("/root/AudioManager"):
 		get_node("/root/AudioManager").play_click()
-	# Transition into the main cleaning mission
-	get_tree().change_scene_to_file("res://scenes/main.tscn")
+	# Launch 3D Lunar Cleaning Mission
+	get_tree().change_scene_to_file("res://scenes/main_3d.tscn")
 
 func _on_settings_button_pressed() -> void:
 	_animate_button_punch($HUD/CenterBox/SettingsBtn)
