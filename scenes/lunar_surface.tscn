@@ -35,6 +35,10 @@ corner_radius_top_right = 110
 corner_radius_bottom_right = 110
 corner_radius_bottom_left = 110
 
+[sub_resource type="Curve" id="Curve_particles"]
+_data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(1, 0), -1.0, 0.0, 0, 0]
+point_count = 2
+
 [node name="LunarSurface" type="Control"]
 clip_contents = true
 custom_minimum_size = Vector2(900, 900)
@@ -135,3 +139,18 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
+
+[node name="DustPuffParticles" type="CPUParticles2D" parent="."]
+emitting = false
+amount = 6
+lifetime = 0.35
+one_shot = true
+explosiveness = 0.85
+spread = 180.0
+gravity = Vector2(0, 0)
+initial_velocity_min = 25.0
+initial_velocity_max = 65.0
+scale_amount_min = 5.0
+scale_amount_max = 9.0
+scale_amount_curve = SubResource("Curve_particles")
+color = Color(0.65098, 0.607843, 0.529412, 0.8)

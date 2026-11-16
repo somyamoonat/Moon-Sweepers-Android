@@ -14,6 +14,18 @@ corner_radius_top_right = 28
 corner_radius_bottom_right = 28
 corner_radius_bottom_left = 28
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_soundbtn"]
+bg_color = Color(0.160784, 0.282353, 0.419608, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.341176, 0.541176, 0.780392, 1)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
+
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_savebtn"]
 bg_color = Color(0.129412, 0.45098, 0.25098, 1)
 border_width_left = 2
@@ -33,6 +45,18 @@ border_width_top = 2
 border_width_right = 2
 border_width_bottom = 2
 border_color = Color(0.85, 0.25, 0.28, 1)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_menubtn"]
+bg_color = Color(0.25, 0.22, 0.15, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.65, 0.55, 0.25, 1)
 corner_radius_top_left = 14
 corner_radius_top_right = 14
 corner_radius_bottom_right = 14
@@ -69,17 +93,17 @@ grow_vertical = 2
 color = Color(0.02, 0.03, 0.05, 0.82)
 
 [node name="Panel" type="Panel" parent="DimBackdrop"]
-custom_minimum_size = Vector2(860, 900)
+custom_minimum_size = Vector2(880, 1050)
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -430.0
-offset_top = -450.0
-offset_right = 430.0
-offset_bottom = 450.0
+offset_left = -440.0
+offset_top = -525.0
+offset_right = 440.0
+offset_bottom = 525.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_modal")
@@ -98,7 +122,7 @@ theme_override_constants/margin_bottom = 40
 
 [node name="VBox" type="VBoxContainer" parent="DimBackdrop/Panel/Margin"]
 layout_mode = 2
-theme_override_constants/separation = 28
+theme_override_constants/separation = 22
 
 [node name="TitleLabel" type="Label" parent="DimBackdrop/Panel/Margin/VBox"]
 layout_mode = 2
@@ -109,8 +133,8 @@ horizontal_alignment = 1
 [node name="DescLabel" type="Label" parent="DimBackdrop/Panel/Margin/VBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.7, 0.74, 0.82, 1)
-theme_override_font_sizes/font_size = 26
-text = "Moon Sweepers automatically saves every 30 seconds and when exiting."
+theme_override_font_sizes/font_size = 24
+text = "Moon Sweepers automatically saves every 30 seconds."
 horizontal_alignment = 1
 autowrap_mode = 2
 
@@ -123,17 +147,31 @@ horizontal_alignment = 1
 [node name="HSeparator" type="HSeparator" parent="DimBackdrop/Panel/Margin/VBox"]
 layout_mode = 2
 
-[node name="SaveNowButton" type="Button" parent="DimBackdrop/Panel/Margin/VBox"]
-custom_minimum_size = Vector2(0, 84)
+[node name="SoundToggleBtn" type="Button" parent="DimBackdrop/Panel/Margin/VBox"]
+custom_minimum_size = Vector2(0, 80)
 layout_mode = 2
-theme_override_font_sizes/font_size = 32
+theme_override_font_sizes/font_size = 30
+theme_override_styles/normal = SubResource("StyleBoxFlat_soundbtn")
+text = "🔊 SOUND EFFECTS: ON"
+
+[node name="SaveNowButton" type="Button" parent="DimBackdrop/Panel/Margin/VBox"]
+custom_minimum_size = Vector2(0, 80)
+layout_mode = 2
+theme_override_font_sizes/font_size = 30
 theme_override_styles/normal = SubResource("StyleBoxFlat_savebtn")
 text = "💾 SAVE GAME NOW"
 
-[node name="ResetProgressButton" type="Button" parent="DimBackdrop/Panel/Margin/VBox"]
-custom_minimum_size = Vector2(0, 84)
+[node name="MainMenuButton" type="Button" parent="DimBackdrop/Panel/Margin/VBox"]
+custom_minimum_size = Vector2(0, 80)
 layout_mode = 2
 theme_override_font_sizes/font_size = 30
+theme_override_styles/normal = SubResource("StyleBoxFlat_menubtn")
+text = "🏠 RETURN TO MAIN MENU"
+
+[node name="ResetProgressButton" type="Button" parent="DimBackdrop/Panel/Margin/VBox"]
+custom_minimum_size = Vector2(0, 80)
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
 theme_override_styles/normal = SubResource("StyleBoxFlat_resetbtn")
 text = "⚠️ RESET ALL PROGRESS"
 
@@ -148,6 +186,8 @@ theme_override_font_sizes/font_size = 30
 theme_override_styles/normal = SubResource("StyleBoxFlat_closebtn")
 text = "RETURN TO MISSION"
 
+[connection signal="pressed" from="DimBackdrop/Panel/Margin/VBox/SoundToggleBtn" to="." method="_on_sound_toggle_pressed"]
 [connection signal="pressed" from="DimBackdrop/Panel/Margin/VBox/SaveNowButton" to="." method="_on_save_button_pressed"]
+[connection signal="pressed" from="DimBackdrop/Panel/Margin/VBox/MainMenuButton" to="." method="_on_main_menu_pressed"]
 [connection signal="pressed" from="DimBackdrop/Panel/Margin/VBox/ResetProgressButton" to="." method="_on_reset_button_pressed"]
 [connection signal="pressed" from="DimBackdrop/Panel/Margin/VBox/CloseButton" to="." method="close_settings"]

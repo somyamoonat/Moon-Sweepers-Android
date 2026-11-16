@@ -1,0 +1,279 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/main_menu.gd" id="1_menu"]
+[ext_resource type="PackedScene" path="res://scenes/settings_panel.tscn" id="2_settings"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_playbtn"]
+bg_color = Color(0.129412, 0.45098, 0.25098, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.290196, 0.819608, 0.490196, 1)
+corner_radius_top_left = 20
+corner_radius_top_right = 20
+corner_radius_bottom_right = 20
+corner_radius_bottom_left = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_menubtn"]
+bg_color = Color(0.180392, 0.211765, 0.298039, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.360784, 0.407843, 0.541176, 1)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_pill"]
+bg_color = Color(0.109804, 0.129412, 0.188235, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.25098, 0.301961, 0.431373, 1)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_moon_preview"]
+bg_color = Color(0.141176, 0.156863, 0.203922, 1)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0.301961, 0.345098, 0.470588, 1)
+corner_radius_top_left = 140
+corner_radius_top_right = 140
+corner_radius_bottom_right = 140
+corner_radius_bottom_left = 140
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_help_modal"]
+bg_color = Color(0.0901961, 0.101961, 0.141176, 0.98)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0.301961, 0.345098, 0.470588, 1)
+corner_radius_top_left = 24
+corner_radius_top_right = 24
+corner_radius_bottom_right = 24
+corner_radius_bottom_left = 24
+
+[node name="MainMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_menu")
+
+[node name="SpaceBackground" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.0470588, 0.054902, 0.0901961, 1)
+
+[node name="HUD" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="TopBox" type="VBoxContainer" parent="HUD"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 60.0
+offset_top = 160.0
+offset_right = -60.0
+offset_bottom = 420.0
+grow_horizontal = 2
+theme_override_constants/separation = 16
+
+[node name="TitleLabel" type="Label" parent="HUD/TopBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 68
+text = "MOON SWEEPERS"
+horizontal_alignment = 1
+
+[node name="SubtitleLabel" type="Label" parent="HUD/TopBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.407843, 0.811765, 1, 1)
+theme_override_font_sizes/font_size = 32
+text = "Lunar Cleaning & Automation"
+horizontal_alignment = 1
+
+[node name="MoonGraphic" type="Panel" parent="HUD"]
+custom_minimum_size = Vector2(280, 280)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -140.0
+offset_top = -370.0
+offset_right = 140.0
+offset_bottom = -90.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_moon_preview")
+
+[node name="CenterBox" type="VBoxContainer" parent="HUD"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -380.0
+offset_top = 60.0
+offset_right = 380.0
+offset_bottom = 600.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 24
+
+[node name="SectorPill" type="PanelContainer" parent="HUD/CenterBox"]
+custom_minimum_size = Vector2(0, 64)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_pill")
+
+[node name="Margin" type="MarginContainer" parent="HUD/CenterBox/SectorPill"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_right = 16
+
+[node name="MissionLabel" type="Label" parent="HUD/CenterBox/SectorPill/Margin"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.74, 0.8, 0.92, 1)
+theme_override_font_sizes/font_size = 26
+text = "Sector 01: Mare Tranquillitatis  •  Cleared: 0"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="PlayBtn" type="Button" parent="HUD/CenterBox"]
+custom_minimum_size = Vector2(0, 110)
+layout_mode = 2
+theme_override_font_sizes/font_size = 42
+theme_override_styles/normal = SubResource("StyleBoxFlat_playbtn")
+text = "▶ START MISSION"
+
+[node name="SettingsBtn" type="Button" parent="HUD/CenterBox"]
+custom_minimum_size = Vector2(0, 90)
+layout_mode = 2
+theme_override_font_sizes/font_size = 34
+theme_override_styles/normal = SubResource("StyleBoxFlat_menubtn")
+text = "⚙️ MISSION SETTINGS"
+
+[node name="HowToPlayBtn" type="Button" parent="HUD/CenterBox"]
+custom_minimum_size = Vector2(0, 84)
+layout_mode = 2
+theme_override_font_sizes/font_size = 30
+theme_override_styles/normal = SubResource("StyleBoxFlat_menubtn")
+text = "❓ HOW TO PLAY"
+
+[node name="FooterLabel" type="Label" parent="HUD"]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -90.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_colors/font_color = Color(0.45, 0.5, 0.6, 1)
+theme_override_font_sizes/font_size = 24
+text = "v1.0.0 • Mobile Edition (Android)"
+horizontal_alignment = 1
+
+[node name="HowToPlayPanel" type="Panel" parent="."]
+visible = false
+custom_minimum_size = Vector2(900, 1100)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -450.0
+offset_top = -550.0
+offset_right = 450.0
+offset_bottom = 550.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_help_modal")
+
+[node name="Margin" type="MarginContainer" parent="HowToPlayPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 40
+theme_override_constants/margin_top = 40
+theme_override_constants/margin_right = 40
+theme_override_constants/margin_bottom = 40
+
+[node name="VBox" type="VBoxContainer" parent="HowToPlayPanel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 24
+
+[node name="Title" type="Label" parent="HowToPlayPanel/Margin/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 40
+text = "LUNAR CLEANER'S MANUAL"
+horizontal_alignment = 1
+
+[node name="HSeparator" type="HSeparator" parent="HowToPlayPanel/Margin/VBox"]
+layout_mode = 2
+
+[node name="Content" type="Label" parent="HowToPlayPanel/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.85, 0.94, 1)
+theme_override_font_sizes/font_size = 28
+text = "1. DRAG TO SCRUB:
+Swipe your finger or mouse across the dirty lunar regolith to scrub dust into your hopper.
+
+2. STORAGE LIMIT:
+Your tank fills with dust. When full, tap the big SELL DUST button to convert it into Credits.
+
+3. AUTOMATION & UPGRADES:
+Open the Shop to unlock wider brushes, larger tanks, autonomous Cleaning Bots, and the Auto-Sell Module.
+
+4. SECTOR PROGRESSION:
+Clean 95% of a sector to receive a large credit bonus and advance to new, dustier sectors!"
+autowrap_mode = 2
+
+[node name="Spacer" type="Control" parent="HowToPlayPanel/Margin/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="CloseHelpBtn" type="Button" parent="HowToPlayPanel/Margin/VBox"]
+custom_minimum_size = Vector2(0, 84)
+layout_mode = 2
+theme_override_font_sizes/font_size = 32
+theme_override_styles/normal = SubResource("StyleBoxFlat_playbtn")
+text = "GOT IT, LET'S CLEAN!"
+
+[node name="SettingsPanel" parent="." instance=ExtResource("2_settings")]
+visible = false
+layout_mode = 1
+
+[connection signal="pressed" from="HUD/CenterBox/PlayBtn" to="." method="_on_play_button_pressed"]
+[connection signal="pressed" from="HUD/CenterBox/SettingsBtn" to="." method="_on_settings_button_pressed"]
+[connection signal="pressed" from="HUD/CenterBox/HowToPlayBtn" to="." method="_on_how_to_play_button_pressed"]
+[connection signal="pressed" from="HowToPlayPanel/Margin/VBox/CloseHelpBtn" to="." method="_on_close_help_pressed"]

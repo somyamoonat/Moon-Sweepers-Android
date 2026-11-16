@@ -1,7 +1,11 @@
+class_name MainGame
 extends Control
 
+## Main Gameplay Controller for Moon Sweepers
+## Coordinates the Lunar Surface, HUD, Storage, Automation, and Audio.
+
 @onready var space_background: ColorRect = $SpaceBackground
-@onready var lunar_surface = $LunarSurface
+@onready var lunar_surface: LunarSurface = $LunarSurface
 @onready var title_label: Label = $HUD/TopBar/HeaderRow/TitleLabel
 @onready var sector_info_label: Label = $HUD/TopBar/SectorInfoLabel
 @onready var clean_label: Label = $HUD/TopBar/CleanPercentageLabel
@@ -13,6 +17,7 @@ extends Control
 @onready var dust_progress_bar: ProgressBar = $HUD/TopBar/DustStorageBox/DustProgressBar
 @onready var storage_warning: Panel = $HUD/TopBar/DustStorageBox/StorageWarning
 @onready var sell_button: Button = $HUD/BottomBar/SellButton
+@onready var reset_button: Button = $HUD/BottomBar/ResetButton
 @onready var completion_banner: Panel = $HUD/CompletionBanner
 @onready var completion_label: Label = $HUD/CompletionBanner/VBox/Label
 @onready var next_sector_button: Button = $HUD/CompletionBanner/VBox/NextSectorButton
@@ -21,6 +26,7 @@ extends Control
 @onready var floating_text_spawn: Marker2D = $HUD/BottomBar/FloatingTextSpawn
 
 var auto_sell_timer: Timer
+var surface_original_pos: Vector2
 
 func _ready() -> void:
 	completion_banner.visible = false
@@ -28,6 +34,7 @@ func _ready() -> void:
 	settings_panel.visible = false
 	storage_warning.visible = false
 	
+	surface_original_pos = lunar_surface.position
 	_setup_auto_sell_timer()
 	
 	# Connect surface signals
@@ -59,6 +66,7 @@ func _setup_auto_sell_timer() -> void:
 	auto_sell_timer.timeout.connect(_on_auto_sell_triggered)
 	add_child(auto_sell_timer)
 
+## Updates the space background tint, title, and sector information
 func _apply_sector_visuals(sector_num: int, theme: Dictionary) -> void:
 	space_background.color = theme.get("bg_color", Color(0.047, 0.055, 0.09, 1.0))
 	title_label.text = "MOON SWEEPERS"
@@ -80,6 +88,9 @@ func _on_sector_cleaned() -> void:
 	completion_banner.visible = true
 
 func _on_next_sector_pressed() -> void:
+	_animate_button_punch(next_sector_button)
+	if has_node("/root/AudioManager"):
+		get_node("/root/AudioManager").play_click()
 	GameState.advance_to_next_sector()
 
 func _on_dust_scrubbed(amount: float) -> void:
@@ -104,7 +115,7 @@ func _on_storage_status_changed(is_full: bool) -> void:
 	
 	if is_full:
 		_pulse_storage_warning()
-		# Stage 6: Auto-Sell module logic
+		# Auto-Sell module logic
 		if GameState.upgrades["auto_sell"].level >= 1:
 			auto_sell_timer.start()
 
@@ -128,10 +139,20 @@ func _update_sell_button() -> void:
 		sell_button.disabled = false
 
 func _on_sell_button_pressed() -> void:
+	_animate_button_punch(sell_button)
 	var earned: int = GameState.sell_dust()
 	if earned > 0:
 		_spawn_floating_text("+$%d" % earned)
+		_apply_sell_screen_shake()
 
+## Triggers subtle screen shake when converting dust into money
+func _apply_sell_screen_shake() -> void:
+	var tween := create_tween()
+	var offsets := [Vector2(6, -4), Vector2(-5, 6), Vector2(4, -3), Vector2(-2, 2), Vector2.ZERO]
+	for off in offsets:
+		tween.tween_property(lunar_surface, "position", surface_original_pos + off, 0.035)
+
+## Spawns rising floating text animation showing earned currency
 func _spawn_floating_text(text: String) -> void:
 	var float_label := Label.new()
 	float_label.text = text
@@ -157,13 +178,28 @@ func _pulse_storage_warning() -> void:
 	tween.tween_property(storage_warning, "modulate", Color(1.4, 0.3, 0.3, 1.0), 0.15)
 	tween.tween_property(storage_warning, "modulate", Color(1.0, 1.0, 1.0, 1.0), 0.25)
 
+## Generic button press punch animation for mobile tactile feedback
+func _animate_button_punch(button: Button) -> void:
+	var tween := create_tween()
+	tween.tween_property(button, "scale", Vector2(0.95, 0.95), 0.06)
+	tween.tween_property(button, "scale", Vector2(1.0, 1.0), 0.06)
+
 func _on_shop_button_pressed() -> void:
+	_animate_button_punch(shop_btn)
+	if has_node("/root/AudioManager"):
+		get_node("/root/AudioManager").play_click()
 	shop_panel.open_shop()
 
 func _on_settings_button_pressed() -> void:
+	_animate_button_punch(settings_btn)
+	if has_node("/root/AudioManager"):
+		get_node("/root/AudioManager").play_click()
 	settings_panel.open_settings()
 
 func _on_reset_button_pressed() -> void:
+	_animate_button_punch(reset_button)
+	if has_node("/root/AudioManager"):
+		get_node("/root/AudioManager").play_click()
 	completion_banner.visible = false
 	lunar_surface.reset_surface()
 

@@ -1,9 +1,16 @@
 class_name LunarSurface
 extends Control
 
+## Emitted whenever the clean percentage changes.
 signal clean_percentage_changed(percentage: float)
+
+## Emitted when the sector reaches 95% clean threshold.
 signal sector_cleaned()
+
+## Emitted with the amount of dust (in kg) gathered from scrubbed pixels.
 signal dust_scrubbed(amount: float)
+
+## Emitted if the player tries to scrub while storage is full.
 signal scrub_blocked()
 
 @export var brush_size: float = 48.0
@@ -18,6 +25,7 @@ const ERASED_COLOR := Color(0.0, 0.0, 0.0, 0.0)
 @onready var bedrock: Control = $Bedrock
 @onready var bedrock_base: ColorRect = $Bedrock/CleanBaseColor
 @onready var bots_container: Control = $BotsContainer
+@onready var dust_particles: CPUParticles2D = $DustPuffParticles
 
 var dust_image: Image
 var dust_texture: ImageTexture
@@ -26,6 +34,7 @@ var cleaned_pixels: int = 0
 var is_scrubbing: bool = false
 var last_touch_pos: Vector2 = Vector2.ZERO
 var is_completed: bool = false
+var last_puff_time: float = 0.0
 
 const BotScene = preload("res://scenes/cleaning_bot.tscn")
 
@@ -34,12 +43,18 @@ func _ready() -> void:
 	apply_theme(GameState.get_current_theme())
 	_init_or_load_dust_layer()
 
+## Applies a visual theme to the bedrock, craters, and dust layer
 func apply_theme(theme: Dictionary) -> void:
 	current_dust_color = theme.get("dust_color", Color(0.48, 0.44, 0.38, 1.0))
 	total_sector_dust = GameState.get_sector_total_dust()
 	
 	if bedrock_base:
 		bedrock_base.color = theme.get("bedrock_color", Color(0.141, 0.157, 0.204, 1.0))
+	
+	if dust_particles:
+		var pcolor: Color = current_dust_color
+		pcolor.a = 0.75
+		dust_particles.color = pcolor
 	
 	# Update craters
 	var crater_color: Color = theme.get("crater_color", Color(0.082, 0.090, 0.118, 1.0))
@@ -51,15 +66,14 @@ func apply_theme(theme: Dictionary) -> void:
 				sb.bg_color = crater_color
 				crater_node.add_theme_stylebox_override("panel", sb)
 
+## Initializes or loads the cached dust mask from disk
 func _init_or_load_dust_layer() -> void:
 	cleaned_pixels = 0
 	is_completed = false
 	
-	# Check if saved dust mask exists
 	if FileAccess.file_exists(GameState.DUST_MASK_PATH):
 		dust_image = Image.load_from_file(GameState.DUST_MASK_PATH)
 		if dust_image and dust_image.get_width() == image_resolution:
-			# Count already cleaned pixels
 			for y in range(image_resolution):
 				for x in range(image_resolution):
 					if dust_image.get_pixel(x, y).a <= 0.1:
@@ -96,6 +110,7 @@ func reset_surface() -> void:
 	is_completed = false
 	clean_percentage_changed.emit(0.0)
 
+## Spawns or prunes autonomous cleaning bots based on upgrade level
 func update_bots_count(target_count: int) -> void:
 	if not bots_container:
 		return
@@ -116,7 +131,7 @@ func update_bots_count(target_count: int) -> void:
 func bot_scrub_at(local_pos: Vector2, radius: float) -> void:
 	if not can_scrub or is_completed:
 		return
-	_apply_brush_erase(local_pos, radius)
+	_apply_brush_erase(local_pos, radius, false)
 
 func _gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton:
@@ -169,9 +184,9 @@ func _scrub_line(from: Vector2, to: Vector2) -> void:
 		_scrub_at(from.lerp(to, t))
 
 func _scrub_at(local_pos: Vector2) -> void:
-	_apply_brush_erase(local_pos, brush_size)
+	_apply_brush_erase(local_pos, brush_size, true)
 
-func _apply_brush_erase(local_pos: Vector2, radius_px: float) -> void:
+func _apply_brush_erase(local_pos: Vector2, radius_px: float, is_player: bool) -> void:
 	if size.x <= 0 or size.y <= 0 or not can_scrub:
 		return
 	
@@ -209,7 +224,17 @@ func _apply_brush_erase(local_pos: Vector2, radius_px: float) -> void:
 		var dust_gained: float = float(pixels_erased_this_stamp) * dust_per_pixel
 		dust_scrubbed.emit(dust_gained)
 		
-		# Stage 7 threshold: 95% clean completes sector!
+		# Emit dust puff particle effect
+		var now: float = Time.get_ticks_msec() / 1000.0
+		if now - last_puff_time > 0.06:
+			last_puff_time = now
+			dust_particles.position = local_pos
+			dust_particles.restart()
+		
+		# Audio hook
+		if is_player and has_node("/root/AudioManager"):
+			get_node("/root/AudioManager").play_scrub()
+		
 		if percentage >= 95.0 and not is_completed:
 			is_completed = true
 			sector_cleaned.emit()

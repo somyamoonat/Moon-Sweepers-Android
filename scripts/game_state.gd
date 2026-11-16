@@ -1,12 +1,13 @@
 extends Node
 
-## Central GameState, Economy, Progression & Save/Load Manager
+## Central GameState, Economy, Progression, Audio Settings & Save/Load Manager
 
 signal money_changed(new_amount: int)
 signal dust_changed(current: float, capacity: float)
 signal storage_status_changed(is_full: bool)
 signal upgrade_purchased(upgrade_id: String, new_level: int)
 signal sector_changed(sector_num: int, theme: Dictionary)
+signal sound_toggled(enabled: bool)
 signal game_saved()
 signal game_reset()
 
@@ -21,6 +22,7 @@ var brush_size: float = 48.0
 var is_storage_full: bool = false
 var current_sector: int = 1
 var sectors_cleared: int = 0
+var sound_enabled: bool = true
 
 ## Data-driven upgrades dictionary
 var upgrades: Dictionary = {
@@ -69,7 +71,7 @@ var upgrades: Dictionary = {
 		"icon": "🤖",
 		"description": "Autonomous rover that scrubs dust continuously.",
 		"level": 0,
-		"max_level": 6, # sensible cap for phone performance
+		"max_level": 6, # phone performance cap
 		"base_cost": 75,
 		"cost_mult": 1.7,
 		"base_val": 0.0,
@@ -143,9 +145,14 @@ func _setup_autosave() -> void:
 	add_child(autosave_timer)
 
 func _notification(what: int) -> void:
-	# Save automatically on mobile app lifecycle events and window close
 	if what == NOTIFICATION_WM_CLOSE_REQUEST or what == NOTIFICATION_APPLICATION_PAUSED or what == NOTIFICATION_APPLICATION_FOCUS_OUT:
 		save_game()
+
+func toggle_sound() -> bool:
+	sound_enabled = not sound_enabled
+	sound_toggled.emit(sound_enabled)
+	save_game()
+	return sound_enabled
 
 func get_current_theme() -> Dictionary:
 	var index: int = (current_sector - 1) % SECTOR_THEMES.size()
@@ -191,21 +198,26 @@ func sell_dust() -> int:
 	_check_storage_status()
 	money_changed.emit(money)
 	dust_changed.emit(dust, capacity)
+	
+	if has_node("/root/AudioManager"):
+		get_node("/root/AudioManager").play_sell()
+		
 	return earnings
 
 func advance_to_next_sector() -> void:
 	current_sector += 1
 	sectors_cleared += 1
 	
-	# Award a sector completion bonus
 	var bonus: int = current_sector * 50
 	money += bonus
 	money_changed.emit(money)
 	
-	# Remove old saved dust mask so next sector starts fresh
 	if FileAccess.file_exists(DUST_MASK_PATH):
 		DirAccess.remove_absolute(DUST_MASK_PATH)
 	
+	if has_node("/root/AudioManager"):
+		get_node("/root/AudioManager").play_sector_complete()
+		
 	sector_changed.emit(current_sector, get_current_theme())
 	save_game()
 
@@ -214,7 +226,7 @@ func get_upgrade_cost(id: String) -> int:
 		return 999999
 	var data: Dictionary = upgrades[id]
 	if data.level >= data.get("max_level", 999):
-		return -1 # Maxed out
+		return -1
 	return int(round(data.base_cost * pow(data.cost_mult, data.level)))
 
 func get_upgrade_current_val(id: String) -> float:
@@ -253,10 +265,13 @@ func buy_upgrade(id: String) -> bool:
 	money_changed.emit(money)
 	dust_changed.emit(dust, capacity)
 	upgrade_purchased.emit(id, upgrades[id].level)
+	
+	if has_node("/root/AudioManager"):
+		get_node("/root/AudioManager").play_upgrade()
+		
 	save_game()
 	return true
 
-## Saves current progression to user://savegame.json
 func save_game() -> void:
 	var save_data := {
 		"version": 1,
@@ -264,6 +279,7 @@ func save_game() -> void:
 		"dust": dust,
 		"current_sector": current_sector,
 		"sectors_cleared": sectors_cleared,
+		"sound_enabled": sound_enabled,
 		"upgrades": {}
 	}
 	
@@ -277,7 +293,6 @@ func save_game() -> void:
 		file.close()
 		game_saved.emit()
 
-## Loads saved progression from user://savegame.json
 func load_game() -> void:
 	if not FileAccess.file_exists(SAVE_PATH):
 		return
@@ -302,20 +317,20 @@ func load_game() -> void:
 	dust = float(data.get("dust", 0.0))
 	current_sector = int(data.get("current_sector", 1))
 	sectors_cleared = int(data.get("sectors_cleared", 0))
+	sound_enabled = bool(data.get("sound_enabled", true))
 	
 	var saved_upgrades: Dictionary = data.get("upgrades", {})
 	for id in saved_upgrades:
 		if upgrades.has(id):
 			upgrades[id].level = int(saved_upgrades[id])
 
-## Resets all progression back to factory defaults
 func reset_all_progress() -> void:
 	money = 0
 	dust = 0.0
 	current_sector = 1
 	sectors_cleared = 0
+	sound_enabled = true
 	
-	# Reset upgrade levels
 	upgrades["brush_size"].level = 1
 	upgrades["dust_capacity"].level = 1
 	upgrades["dust_value"].level = 1
@@ -324,7 +339,6 @@ func reset_all_progress() -> void:
 	
 	_recalculate_stats()
 	
-	# Delete save files
 	if FileAccess.file_exists(SAVE_PATH):
 		DirAccess.remove_absolute(SAVE_PATH)
 	if FileAccess.file_exists(DUST_MASK_PATH):
@@ -332,5 +346,6 @@ func reset_all_progress() -> void:
 	
 	money_changed.emit(money)
 	dust_changed.emit(dust, capacity)
+	sound_toggled.emit(sound_enabled)
 	sector_changed.emit(current_sector, get_current_theme())
 	game_reset.emit()
