@@ -1,7 +1,7 @@
 class_name MobileControls3D
 extends Control
 
-## Virtual Floating Joystick and Action Buttons for Mobile 3D Gameplay.
+## Virtual Floating Joystick and Action Buttons for Mobile 3D Gameplay (Landscape Widescreen).
 
 @export var player_path: NodePath
 var player: Player3D
@@ -11,7 +11,7 @@ var joystick_active: bool = false
 var joystick_center: Vector2 = Vector2.ZERO
 var joystick_touch_index: int = -1
 var joystick_vector: Vector2 = Vector2.ZERO
-const JOYSTICK_MAX_RADIUS: float = 110.0
+const JOYSTICK_MAX_RADIUS: float = 120.0
 
 # Camera Look Touch Variables
 var camera_touch_index: int = -1
@@ -19,6 +19,7 @@ var camera_touch_index: int = -1
 @onready var joystick_base: Control = $JoystickBase
 @onready var joystick_knob: Control = $JoystickBase/Knob
 @onready var sweep_btn: Button = $ActionButtons/SweepToggleBtn
+@onready var lock_btn: Button = $ActionButtons/AngleLockBtn
 @onready var jetpack_btn: Button = $ActionButtons/JetpackBtn
 @onready var compress_btn: Button = $ActionButtons/CompressBtn
 @onready var view_btn: Button = $ActionButtons/ViewToggleBtn
@@ -34,7 +35,6 @@ func _process(delta: float) -> void:
 	if is_jetpack_holding and player:
 		player.apply_jetpack_thrust(delta)
 	
-	# Update compress button enabled state based on dust
 	if compress_btn:
 		compress_btn.disabled = (GameState.dust < 10.0)
 
@@ -42,19 +42,18 @@ func _input(event: InputEvent) -> void:
 	if not player:
 		return
 	
-	# Touch start / end
 	if event is InputEventScreenTouch:
 		if event.pressed:
-			# Left side of screen = Virtual Joystick
-			if event.position.x < size.x * 0.48 and joystick_touch_index == -1:
+			# Left 45% of screen = Virtual Joystick
+			if event.position.x < size.x * 0.45 and joystick_touch_index == -1:
 				joystick_touch_index = event.index
 				joystick_active = true
 				joystick_center = event.position
 				joystick_base.global_position = joystick_center - (joystick_base.size * 0.5)
 				joystick_knob.position = (joystick_base.size * 0.5) - (joystick_knob.size * 0.5)
 				joystick_base.visible = true
-			# Right side of screen = Camera look (if not clicking action buttons)
-			elif event.position.x >= size.x * 0.48 and camera_touch_index == -1:
+			# Right 55% of screen = Camera look
+			elif event.position.x >= size.x * 0.45 and camera_touch_index == -1:
 				camera_touch_index = event.index
 		else:
 			if event.index == joystick_touch_index:
@@ -66,7 +65,6 @@ func _input(event: InputEvent) -> void:
 			elif event.index == camera_touch_index:
 				camera_touch_index = -1
 	
-	# Touch drag
 	elif event is InputEventScreenDrag:
 		if event.index == joystick_touch_index and joystick_active:
 			var offset: Vector2 = event.position - joystick_center
@@ -80,8 +78,8 @@ func _input(event: InputEvent) -> void:
 		elif event.index == camera_touch_index:
 			player.rotate_camera(event.relative)
 	
-	# Mouse fallback for testing on Mac
-	elif event is InputEventMouseButton and OS.has_feature("editor") or not OS.has_feature("mobile"):
+	# Desktop testing fallback
+	elif event is InputEventMouseButton and (OS.has_feature("editor") or not OS.has_feature("mobile")):
 		if event.button_index == MOUSE_BUTTON_RIGHT:
 			if event.pressed:
 				camera_touch_index = 999
@@ -93,10 +91,14 @@ func _input(event: InputEvent) -> void:
 func _on_sweep_toggle_pressed() -> void:
 	if player:
 		var active := player.toggle_auto_sweep()
-		if active:
-			sweep_btn.text = "🧹 SWEEP: ON"
-		else:
-			sweep_btn.text = "🧹 SWEEP: OFF"
+		sweep_btn.text = "🧹 SWEEP: ON" if active else "🧹 SWEEP: OFF"
+	if has_node("/root/AudioManager"):
+		get_node("/root/AudioManager").play_click()
+
+func _on_angle_lock_pressed() -> void:
+	if player:
+		var locked := player.toggle_angle_lock()
+		lock_btn.text = "🔒 L-LOCK: ON" if locked else "🔓 L-LOCK: OFF"
 	if has_node("/root/AudioManager"):
 		get_node("/root/AudioManager").play_click()
 
@@ -113,9 +115,6 @@ func _on_compress_pressed() -> void:
 func _on_view_toggle_pressed() -> void:
 	if player:
 		var is_1p := player.toggle_camera_view()
-		if is_1p:
-			view_btn.text = "👁️ 1P"
-		else:
-			view_btn.text = "👁️ 3P"
+		view_btn.text = "👁️ 1P" if is_1p else "👁️ 3P"
 	if has_node("/root/AudioManager"):
 		get_node("/root/AudioManager").play_click()

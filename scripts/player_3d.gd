@@ -1,21 +1,23 @@
 class_name Player3D
 extends CharacterBody3D
 
-## 3D Astronaut Player with low-gravity movement, jetpack, and sweeper tool.
+## 3D Astronaut Player for Moon Sweepers
+## Features low-gravity movement, jetpack thrust, angle-lock (L-lock), and sweeper tools.
 
 signal dust_collected(amount: float)
 signal capsule_compressed()
 
-@export var walk_speed: float = 6.5
-@export var jetpack_thrust: float = 5.5
-@export var gravity_strength: float = 4.8 ## Low lunar gravity (moon floatiness)
-@export var sweep_radius: float = 1.6 ## Radius of sweeping broom in meters
+@export var walk_speed: float = 7.0
+@export var jetpack_thrust: float = 6.0
+@export var gravity_strength: float = 4.8 ## Moon low-gravity floatiness
+@export var sweep_radius: float = 1.6
 
 var move_input: Vector2 = Vector2.ZERO
 var look_input: Vector2 = Vector2.ZERO
 var is_sweeping: bool = false
 var auto_sweep_enabled: bool = false
 var is_first_person: bool = false
+var angle_lock_enabled: bool = false
 
 var terrain_ref: LunarTerrain3D
 var sweep_cooldown: float = 0.0
@@ -41,7 +43,6 @@ func _on_upgrade_purchased(upgrade_id: String, _level: int) -> void:
 		_update_tool_radius()
 
 func _update_tool_radius() -> void:
-	# Convert upgrade brush size into 3D meters
 	sweep_radius = 1.2 + (GameState.brush_size * 0.015)
 	if broom_brush:
 		broom_brush.scale.x = sweep_radius * 0.65
@@ -50,11 +51,17 @@ func set_move_vector(input: Vector2) -> void:
 	move_input = input
 
 func rotate_camera(relative: Vector2) -> void:
-	# Horizontal camera yaw
-	camera_pivot.rotate_y(-relative.x * 0.005)
+	if not angle_lock_enabled:
+		# Horizontal camera yaw
+		camera_pivot.rotate_y(-relative.x * 0.005)
+	
 	# Vertical camera pitch clamped
 	spring_arm.rotate_x(-relative.y * 0.005)
 	spring_arm.rotation.x = clampf(spring_arm.rotation.x, -1.2, 0.4)
+
+func toggle_angle_lock() -> bool:
+	angle_lock_enabled = not angle_lock_enabled
+	return angle_lock_enabled
 
 func toggle_camera_view() -> bool:
 	is_first_person = not is_first_person
@@ -79,10 +86,8 @@ func compress_capsule() -> bool:
 	GameState.dust_changed.emit(GameState.dust, GameState.capacity)
 	
 	var capsule = CapsuleScene.instantiate() as RigidBody3D
-	# Spawn in front of player
 	var spawn_pos := global_position + (-global_transform.basis.z * 1.5) + Vector3(0, 0.8, 0)
 	capsule.position = spawn_pos
-	# Apply gentle forward toss
 	capsule.linear_velocity = -global_transform.basis.z * 3.5 + Vector3(0, 1.5, 0)
 	
 	get_parent().add_child(capsule)
@@ -99,7 +104,7 @@ func _physics_process(delta: float) -> void:
 	if not is_on_floor():
 		velocity.y -= gravity_strength * delta
 	
-	# Calculate move direction aligned with camera yaw
+	# Direction aligned with camera orientation
 	var cam_forward := -camera_pivot.global_transform.basis.z
 	cam_forward.y = 0.0
 	cam_forward = cam_forward.normalized()
@@ -113,19 +118,20 @@ func _physics_process(delta: float) -> void:
 		velocity.x = target_dir.x * walk_speed
 		velocity.z = target_dir.z * walk_speed
 		
-		# Smoothly rotate visual body to face movement
-		var look_rot := atan2(-target_dir.x, -target_dir.z)
-		visual_root.rotation.y = lerp_angle(visual_root.rotation.y, look_rot, 12.0 * delta)
+		# In angle lock mode, keep facing forward while strafing in straight lines
+		if angle_lock_enabled:
+			var forward_rot := atan2(-cam_forward.x, -cam_forward.z)
+			visual_root.rotation.y = lerp_angle(visual_root.rotation.y, forward_rot, 14.0 * delta)
+		else:
+			var look_rot := atan2(-target_dir.x, -target_dir.z)
+			visual_root.rotation.y = lerp_angle(visual_root.rotation.y, look_rot, 12.0 * delta)
 	else:
 		velocity.x = move_toward(velocity.x, 0.0, walk_speed * 6.0 * delta)
 		velocity.z = move_toward(velocity.z, 0.0, walk_speed * 6.0 * delta)
 	
 	move_and_slide()
-	
-	# Process sweeping
 	_process_sweeping(delta)
 
-## Keyboard testing fallback for Mac desktop
 func _handle_input_fallback() -> void:
 	if move_input == Vector2.ZERO:
 		var k_input := Vector2.ZERO
@@ -140,12 +146,11 @@ func _handle_input_fallback() -> void:
 		if k_input != Vector2.ZERO:
 			move_input = k_input.normalized()
 	
-	# Spacebar for jetpack jump
 	if Input.is_key_pressed(KEY_SPACE):
 		apply_jetpack_thrust(get_physics_process_delta_time())
 
 func apply_jetpack_thrust(delta: float) -> void:
-	velocity.y = minf(velocity.y + jetpack_thrust * delta * 8.0, 5.0)
+	velocity.y = minf(velocity.y + jetpack_thrust * delta * 8.0, 5.5)
 	if jetpack_particles:
 		jetpack_particles.emitting = true
 
@@ -153,12 +158,11 @@ func _process_sweeping(delta: float) -> void:
 	var active_sweep: bool = is_sweeping or auto_sweep_enabled
 	
 	if active_sweep and not GameState.is_storage_full:
-		# Lower the broom
 		broom_tool.rotation.x = lerpf(broom_tool.rotation.x, deg_to_rad(35.0), 10.0 * delta)
 		
 		sweep_cooldown -= delta
 		if sweep_cooldown <= 0.0:
-			sweep_cooldown = 0.06 # ~16 Hz for butter-smooth mobile cleaning
+			sweep_cooldown = 0.06
 			
 			if not terrain_ref:
 				terrain_ref = get_parent().find_child("LunarTerrain3D", true, false)
@@ -174,7 +178,6 @@ func _process_sweeping(delta: float) -> void:
 					if has_node("/root/AudioManager"):
 						get_node("/root/AudioManager").play_scrub()
 	else:
-		# Raise the broom to idle
 		broom_tool.rotation.x = lerpf(broom_tool.rotation.x, 0.0, 10.0 * delta)
 		if dust_particles:
 			dust_particles.emitting = false

@@ -57,17 +57,17 @@ grow_vertical = 2
 color = Color(0.02, 0.03, 0.05, 0.82)
 
 [node name="Panel" type="Panel" parent="DimBackdrop"]
-custom_minimum_size = Vector2(960, 1400)
+custom_minimum_size = Vector2(1200, 880)
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -480.0
-offset_top = -700.0
-offset_right = 480.0
-offset_bottom = 700.0
+offset_left = -600.0
+offset_top = -440.0
+offset_right = 600.0
+offset_bottom = 440.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_modal")
@@ -79,35 +79,35 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/margin_left = 32
-theme_override_constants/margin_top = 36
-theme_override_constants/margin_right = 32
-theme_override_constants/margin_bottom = 36
+theme_override_constants/margin_left = 36
+theme_override_constants/margin_top = 28
+theme_override_constants/margin_right = 36
+theme_override_constants/margin_bottom = 28
 
 [node name="VBox" type="VBoxContainer" parent="DimBackdrop/Panel/Margin"]
 layout_mode = 2
-theme_override_constants/separation = 24
+theme_override_constants/separation = 18
 
 [node name="Header" type="HBoxContainer" parent="DimBackdrop/Panel/Margin/VBox"]
 layout_mode = 2
-theme_override_constants/separation = 16
+theme_override_constants/separation = 20
 
 [node name="TitleLabel" type="Label" parent="DimBackdrop/Panel/Margin/VBox/Header"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 40
-text = "🛠️ LUNAR DEPOT"
+theme_override_font_sizes/font_size = 38
+text = "🛠️ LUNAR DEPOT UPGRADE TERMINAL"
 
 [node name="CreditsLabel" type="Label" parent="DimBackdrop/Panel/Margin/VBox/Header"]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.835294, 0.309804, 1)
-theme_override_font_sizes/font_size = 34
+theme_override_font_sizes/font_size = 32
 text = "🪙 $0"
 
 [node name="CloseBtn" type="Button" parent="DimBackdrop/Panel/Margin/VBox/Header"]
-custom_minimum_size = Vector2(140, 68)
+custom_minimum_size = Vector2(150, 60)
 layout_mode = 2
-theme_override_font_sizes/font_size = 28
+theme_override_font_sizes/font_size = 26
 theme_override_styles/normal = SubResource("StyleBoxFlat_close_btn")
 text = "✕ CLOSE"
 
@@ -122,14 +122,14 @@ horizontal_scroll_mode = 0
 [node name="ItemsContainer" type="VBoxContainer" parent="DimBackdrop/Panel/Margin/VBox/ScrollContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_constants/separation = 20
+theme_override_constants/separation = 16
 
 [node name="ResumeBtn" type="Button" parent="DimBackdrop/Panel/Margin/VBox"]
-custom_minimum_size = Vector2(0, 84)
+custom_minimum_size = Vector2(0, 72)
 layout_mode = 2
-theme_override_font_sizes/font_size = 32
+theme_override_font_sizes/font_size = 28
 theme_override_styles/normal = SubResource("StyleBoxFlat_resume_btn")
-text = "RETURN TO CLEANING"
+text = "RETURN TO LUNAR SURFACE"
 
 [connection signal="pressed" from="DimBackdrop/Panel/Margin/VBox/Header/CloseBtn" to="." method="close_shop"]
 [connection signal="pressed" from="DimBackdrop/Panel/Margin/VBox/ResumeBtn" to="." method="close_shop"]

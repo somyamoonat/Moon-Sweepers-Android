@@ -46,10 +46,10 @@ border_width_top = 4
 border_width_right = 4
 border_width_bottom = 4
 border_color = Color(0.301961, 0.345098, 0.470588, 1)
-corner_radius_top_left = 140
-corner_radius_top_right = 140
-corner_radius_bottom_right = 140
-corner_radius_bottom_left = 140
+corner_radius_top_left = 150
+corner_radius_top_right = 150
+corner_radius_bottom_right = 150
+corner_radius_bottom_left = 150
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_help_modal"]
 bg_color = Color(0.0901961, 0.101961, 0.141176, 0.98)
@@ -80,7 +80,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-color = Color(0.0470588, 0.054902, 0.0901961, 1)
+color = Color(0.02, 0.025, 0.04, 1)
 
 [node name="HUD" type="Control" parent="."]
 layout_mode = 1
@@ -91,42 +91,18 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="TopBox" type="VBoxContainer" parent="HUD"]
-layout_mode = 1
-anchors_preset = 10
-anchor_right = 1.0
-offset_left = 60.0
-offset_top = 160.0
-offset_right = -60.0
-offset_bottom = 420.0
-grow_horizontal = 2
-theme_override_constants/separation = 16
-
-[node name="TitleLabel" type="Label" parent="HUD/TopBox"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 68
-text = "MOON SWEEPERS"
-horizontal_alignment = 1
-
-[node name="SubtitleLabel" type="Label" parent="HUD/TopBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.407843, 0.811765, 1, 1)
-theme_override_font_sizes/font_size = 32
-text = "Lunar Cleaning & Automation"
-horizontal_alignment = 1
-
 [node name="MoonGraphic" type="Panel" parent="HUD"]
-custom_minimum_size = Vector2(280, 280)
+custom_minimum_size = Vector2(300, 300)
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -140.0
-offset_top = -370.0
-offset_right = 140.0
-offset_bottom = -90.0
+offset_left = -620.0
+offset_top = -150.0
+offset_right = -320.0
+offset_bottom = 150.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_moon_preview")
@@ -138,50 +114,67 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -380.0
-offset_top = 60.0
-offset_right = 380.0
-offset_bottom = 600.0
+offset_left = -260.0
+offset_top = -300.0
+offset_right = 460.0
+offset_bottom = 300.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 24
+theme_override_constants/separation = 22
+alignment = 1
+
+[node name="TitleLabel" type="Label" parent="HUD/CenterBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 72
+text = "MOON SWEEPERS"
+
+[node name="SubtitleLabel" type="Label" parent="HUD/CenterBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.407843, 0.811765, 1, 1)
+theme_override_font_sizes/font_size = 30
+text = "3D Lunar Cleaning & Factory Automation"
 
 [node name="SectorPill" type="PanelContainer" parent="HUD/CenterBox"]
-custom_minimum_size = Vector2(0, 64)
+custom_minimum_size = Vector2(0, 60)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_pill")
 
 [node name="Margin" type="MarginContainer" parent="HUD/CenterBox/SectorPill"]
 layout_mode = 2
-theme_override_constants/margin_left = 16
-theme_override_constants/margin_right = 16
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_right = 20
 
 [node name="MissionLabel" type="Label" parent="HUD/CenterBox/SectorPill/Margin"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.74, 0.8, 0.92, 1)
-theme_override_font_sizes/font_size = 26
+theme_override_font_sizes/font_size = 24
 text = "Sector 01: Mare Tranquillitatis  •  Cleared: 0"
-horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="PlayBtn" type="Button" parent="HUD/CenterBox"]
-custom_minimum_size = Vector2(0, 110)
+custom_minimum_size = Vector2(0, 96)
 layout_mode = 2
-theme_override_font_sizes/font_size = 42
+theme_override_font_sizes/font_size = 38
 theme_override_styles/normal = SubResource("StyleBoxFlat_playbtn")
-text = "▶ START MISSION"
+text = "▶ START 3D MISSION"
 
-[node name="SettingsBtn" type="Button" parent="HUD/CenterBox"]
-custom_minimum_size = Vector2(0, 90)
+[node name="ButtonRow" type="HBoxContainer" parent="HUD/CenterBox"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 34
+theme_override_constants/separation = 20
+
+[node name="SettingsBtn" type="Button" parent="HUD/CenterBox/ButtonRow"]
+custom_minimum_size = Vector2(0, 80)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 28
 theme_override_styles/normal = SubResource("StyleBoxFlat_menubtn")
-text = "⚙️ MISSION SETTINGS"
+text = "⚙️ SETTINGS"
 
-[node name="HowToPlayBtn" type="Button" parent="HUD/CenterBox"]
-custom_minimum_size = Vector2(0, 84)
+[node name="HowToPlayBtn" type="Button" parent="HUD/CenterBox/ButtonRow"]
+custom_minimum_size = Vector2(0, 80)
 layout_mode = 2
-theme_override_font_sizes/font_size = 30
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 28
 theme_override_styles/normal = SubResource("StyleBoxFlat_menubtn")
 text = "❓ HOW TO PLAY"
 
@@ -191,27 +184,27 @@ anchors_preset = 12
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_top = -90.0
+offset_top = -60.0
 grow_horizontal = 2
 grow_vertical = 0
 theme_override_colors/font_color = Color(0.45, 0.5, 0.6, 1)
-theme_override_font_sizes/font_size = 24
-text = "v1.0.0 • Mobile Edition (Android)"
+theme_override_font_sizes/font_size = 22
+text = "Moon Sweepers 3D (Landscape) • Mobile & Desktop"
 horizontal_alignment = 1
 
 [node name="HowToPlayPanel" type="Panel" parent="."]
 visible = false
-custom_minimum_size = Vector2(900, 1100)
+custom_minimum_size = Vector2(1000, 750)
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -450.0
-offset_top = -550.0
-offset_right = 450.0
-offset_bottom = 550.0
+offset_left = -500.0
+offset_top = -375.0
+offset_right = 500.0
+offset_bottom = 375.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_help_modal")
@@ -224,18 +217,18 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/margin_left = 40
-theme_override_constants/margin_top = 40
+theme_override_constants/margin_top = 36
 theme_override_constants/margin_right = 40
-theme_override_constants/margin_bottom = 40
+theme_override_constants/margin_bottom = 36
 
 [node name="VBox" type="VBoxContainer" parent="HowToPlayPanel/Margin"]
 layout_mode = 2
-theme_override_constants/separation = 24
+theme_override_constants/separation = 18
 
 [node name="Title" type="Label" parent="HowToPlayPanel/Margin/VBox"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 40
-text = "LUNAR CLEANER'S MANUAL"
+theme_override_font_sizes/font_size = 38
+text = "LUNAR CLEANER'S MANUAL (3D)"
 horizontal_alignment = 1
 
 [node name="HSeparator" type="HSeparator" parent="HowToPlayPanel/Margin/VBox"]
@@ -244,18 +237,14 @@ layout_mode = 2
 [node name="Content" type="Label" parent="HowToPlayPanel/Margin/VBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.8, 0.85, 0.94, 1)
-theme_override_font_sizes/font_size = 28
-text = "1. DRAG TO SCRUB:
-Swipe your finger or mouse across the dirty lunar regolith to scrub dust into your hopper.
-
-2. STORAGE LIMIT:
-Your tank fills with dust. When full, tap the big SELL DUST button to convert it into Credits.
-
-3. AUTOMATION & UPGRADES:
-Open the Shop to unlock wider brushes, larger tanks, autonomous Cleaning Bots, and the Auto-Sell Module.
-
-4. SECTOR PROGRESSION:
-Clean 95% of a sector to receive a large credit bonus and advance to new, dustier sectors!"
+theme_override_font_sizes/font_size = 24
+text = "• MOVEMENT: Left thumb Virtual Joystick (or WASD / Arrow keys on desktop).
+• CAMERA: Touch-drag anywhere on the right screen half (or Right-Click Drag).
+• SWEEPING: Toggle 🧹 SWEEP: ON to lower your broom and sweep 3D regolith.
+• ANGLE LOCK (L-LOCK): Toggle 🔒 L-LOCK to lock camera heading and sweep parallel stripes!
+• JETPACK: Hold 🚀 JETPACK (or Spacebar) to ignite low-gravity thrusters.
+• PHYSICAL CAPSULES: Tap 📦 PACK CAPSULE to compress 10 kg into a physics capsule item.
+• SELLING: Deliver physical capsules into the Depot's holo-funnel, or dock on the pad to sell!"
 autowrap_mode = 2
 
 [node name="Spacer" type="Control" parent="HowToPlayPanel/Margin/VBox"]
@@ -263,17 +252,17 @@ layout_mode = 2
 size_flags_vertical = 3
 
 [node name="CloseHelpBtn" type="Button" parent="HowToPlayPanel/Margin/VBox"]
-custom_minimum_size = Vector2(0, 84)
+custom_minimum_size = Vector2(0, 72)
 layout_mode = 2
-theme_override_font_sizes/font_size = 32
+theme_override_font_sizes/font_size = 28
 theme_override_styles/normal = SubResource("StyleBoxFlat_playbtn")
-text = "GOT IT, LET'S CLEAN!"
+text = "GOT IT, LET'S CLEAN THE MOON!"
 
 [node name="SettingsPanel" parent="." instance=ExtResource("2_settings")]
 visible = false
 layout_mode = 1
 
 [connection signal="pressed" from="HUD/CenterBox/PlayBtn" to="." method="_on_play_button_pressed"]
-[connection signal="pressed" from="HUD/CenterBox/SettingsBtn" to="." method="_on_settings_button_pressed"]
-[connection signal="pressed" from="HUD/CenterBox/HowToPlayBtn" to="." method="_on_how_to_play_button_pressed"]
+[connection signal="pressed" from="HUD/CenterBox/ButtonRow/SettingsBtn" to="." method="_on_settings_button_pressed"]
+[connection signal="pressed" from="HUD/CenterBox/ButtonRow/HowToPlayBtn" to="." method="_on_how_to_play_button_pressed"]
 [connection signal="pressed" from="HowToPlayPanel/Margin/VBox/CloseHelpBtn" to="." method="_on_close_help_pressed"]
