@@ -3,13 +3,31 @@
 [ext_resource type="Script" path="res://scripts/main.gd" id="1_main"]
 [ext_resource type="PackedScene" path="res://scenes/lunar_surface.tscn" id="2_surface"]
 [ext_resource type="PackedScene" path="res://scenes/shop_panel.tscn" id="3_shop"]
+[ext_resource type="PackedScene" path="res://scenes/settings_panel.tscn" id="4_settings"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_banner"]
-bg_color = Color(0.109804, 0.470588, 0.282353, 0.95)
-corner_radius_top_left = 16
-corner_radius_top_right = 16
-corner_radius_bottom_right = 16
-corner_radius_bottom_left = 16
+bg_color = Color(0.109804, 0.470588, 0.282353, 0.98)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0.3, 0.9, 0.55, 1)
+corner_radius_top_left = 20
+corner_radius_top_right = 20
+corner_radius_bottom_right = 20
+corner_radius_bottom_left = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_nextbtn"]
+bg_color = Color(0.08, 0.28, 0.18, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.4, 0.95, 0.65, 1)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_moneypill"]
 bg_color = Color(0.137255, 0.160784, 0.231373, 1)
@@ -30,6 +48,18 @@ border_width_top = 2
 border_width_right = 2
 border_width_bottom = 2
 border_color = Color(0.352941, 0.54902, 0.819608, 1)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_settingsbtn"]
+bg_color = Color(0.18, 0.2, 0.26, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.38, 0.42, 0.52, 1)
 corner_radius_top_left = 14
 corner_radius_top_right = 14
 corner_radius_bottom_right = 14
@@ -121,87 +151,104 @@ layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
 offset_left = 50.0
-offset_top = 50.0
+offset_top = 45.0
 offset_right = -50.0
-offset_bottom = 430.0
+offset_bottom = 445.0
 grow_horizontal = 2
 mouse_filter = 2
-theme_override_constants/separation = 14
+theme_override_constants/separation = 12
 
 [node name="HeaderRow" type="HBoxContainer" parent="HUD/TopBar"]
 layout_mode = 2
-theme_override_constants/separation = 16
+theme_override_constants/separation = 12
 
 [node name="TitleLabel" type="Label" parent="HUD/TopBar/HeaderRow"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 40
+theme_override_font_sizes/font_size = 36
 text = "MOON SWEEPERS"
 
-[node name="MoneyPill" type="PanelContainer" parent="HUD/TopBar/HeaderRow"]
-custom_minimum_size = Vector2(180, 64)
+[node name="RightControls" type="HBoxContainer" parent="HUD/TopBar/HeaderRow"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="MoneyPill" type="PanelContainer" parent="HUD/TopBar/HeaderRow/RightControls"]
+custom_minimum_size = Vector2(160, 60)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_moneypill")
 
-[node name="Margin" type="MarginContainer" parent="HUD/TopBar/HeaderRow/MoneyPill"]
+[node name="Margin" type="MarginContainer" parent="HUD/TopBar/HeaderRow/RightControls/MoneyPill"]
 layout_mode = 2
-theme_override_constants/margin_left = 16
-theme_override_constants/margin_right = 16
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_right = 14
 
-[node name="HBox" type="HBoxContainer" parent="HUD/TopBar/HeaderRow/MoneyPill/Margin"]
+[node name="HBox" type="HBoxContainer" parent="HUD/TopBar/HeaderRow/RightControls/MoneyPill/Margin"]
 layout_mode = 2
-theme_override_constants/separation = 8
+theme_override_constants/separation = 6
 alignment = 1
 
-[node name="CoinIcon" type="Label" parent="HUD/TopBar/HeaderRow/MoneyPill/Margin/HBox"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 30
-text = "🪙"
-
-[node name="MoneyLabel" type="Label" parent="HUD/TopBar/HeaderRow/MoneyPill/Margin/HBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.886275, 0.407843, 1)
-theme_override_font_sizes/font_size = 32
-text = "$0"
-
-[node name="ShopBtn" type="Button" parent="HUD/TopBar/HeaderRow"]
-custom_minimum_size = Vector2(160, 64)
+[node name="CoinIcon" type="Label" parent="HUD/TopBar/HeaderRow/RightControls/MoneyPill/Margin/HBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 28
+text = "🪙"
+
+[node name="MoneyLabel" type="Label" parent="HUD/TopBar/HeaderRow/RightControls/MoneyPill/Margin/HBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.886275, 0.407843, 1)
+theme_override_font_sizes/font_size = 28
+text = "$0"
+
+[node name="ShopBtn" type="Button" parent="HUD/TopBar/HeaderRow/RightControls"]
+custom_minimum_size = Vector2(130, 60)
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
 theme_override_styles/normal = SubResource("StyleBoxFlat_shopbtn")
 text = "🛒 SHOP"
+
+[node name="SettingsBtn" type="Button" parent="HUD/TopBar/HeaderRow/RightControls"]
+custom_minimum_size = Vector2(68, 60)
+layout_mode = 2
+theme_override_font_sizes/font_size = 26
+theme_override_styles/normal = SubResource("StyleBoxFlat_settingsbtn")
+text = "⚙️"
+
+[node name="SectorInfoLabel" type="Label" parent="HUD/TopBar"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.68, 0.74, 0.88, 1)
+theme_override_font_sizes/font_size = 26
+text = "Sector 01: Mare Tranquillitatis  •  Cleared: 0"
 
 [node name="CleanPercentageLabel" type="Label" parent="HUD/TopBar"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.407843, 0.811765, 1, 1)
-theme_override_font_sizes/font_size = 32
+theme_override_font_sizes/font_size = 30
 text = "Sector Clean: 0.0%"
 
 [node name="CleanProgressBar" type="ProgressBar" parent="HUD/TopBar"]
-custom_minimum_size = Vector2(0, 24)
+custom_minimum_size = Vector2(0, 22)
 layout_mode = 2
 mouse_filter = 2
 show_percentage = false
 
 [node name="DustStorageBox" type="VBoxContainer" parent="HUD/TopBar"]
 layout_mode = 2
-theme_override_constants/separation = 8
+theme_override_constants/separation = 6
 
 [node name="DustLabel" type="Label" parent="HUD/TopBar/DustStorageBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.9, 0.78, 0.6, 1)
-theme_override_font_sizes/font_size = 30
+theme_override_font_sizes/font_size = 28
 text = "Storage: 0 / 100 kg"
 
 [node name="DustProgressBar" type="ProgressBar" parent="HUD/TopBar/DustStorageBox"]
-custom_minimum_size = Vector2(0, 26)
+custom_minimum_size = Vector2(0, 24)
 layout_mode = 2
 mouse_filter = 2
 show_percentage = false
 
 [node name="StorageWarning" type="Panel" parent="HUD/TopBar/DustStorageBox"]
 visible = false
-custom_minimum_size = Vector2(0, 50)
+custom_minimum_size = Vector2(0, 48)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_warning")
 
@@ -212,7 +259,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_font_sizes/font_size = 26
+theme_override_font_sizes/font_size = 24
 text = "⚠️ Storage full! Sell your dust."
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -258,32 +305,51 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -340.0
-offset_top = -90.0
-offset_right = 340.0
-offset_bottom = 90.0
+offset_left = -380.0
+offset_top = -140.0
+offset_right = 380.0
+offset_bottom = 140.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_banner")
 
-[node name="Label" type="Label" parent="HUD/CompletionBanner"]
+[node name="VBox" type="VBoxContainer" parent="HUD/CompletionBanner"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_font_sizes/font_size = 38
-text = "★ SECTION COMPLETE! ★
-Sector Cleaned!"
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="Label" type="Label" parent="HUD/CompletionBanner/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 34
+text = "★ SECTOR COMPLETE! ★
+Cleaned 95%+ • Bonus: +$50"
 horizontal_alignment = 1
 vertical_alignment = 1
+
+[node name="NextSectorButton" type="Button" parent="HUD/CompletionBanner/VBox"]
+custom_minimum_size = Vector2(420, 76)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_font_sizes/font_size = 32
+theme_override_styles/normal = SubResource("StyleBoxFlat_nextbtn")
+text = "NEXT SECTOR ➔"
 
 [node name="ShopPanel" parent="." instance=ExtResource("3_shop")]
 visible = false
 layout_mode = 1
 
-[connection signal="pressed" from="HUD/TopBar/HeaderRow/ShopBtn" to="." method="_on_shop_button_pressed"]
+[node name="SettingsPanel" parent="." instance=ExtResource("4_settings")]
+visible = false
+layout_mode = 1
+
+[connection signal="pressed" from="HUD/TopBar/HeaderRow/RightControls/ShopBtn" to="." method="_on_shop_button_pressed"]
+[connection signal="pressed" from="HUD/TopBar/HeaderRow/RightControls/SettingsBtn" to="." method="_on_settings_button_pressed"]
 [connection signal="pressed" from="HUD/BottomBar/SellButton" to="." method="_on_sell_button_pressed"]
 [connection signal="pressed" from="HUD/BottomBar/ResetButton" to="." method="_on_reset_button_pressed"]
+[connection signal="pressed" from="HUD/CompletionBanner/VBox/NextSectorButton" to="." method="_on_next_sector_pressed"]

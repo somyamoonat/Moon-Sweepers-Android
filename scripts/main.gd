@@ -1,22 +1,34 @@
 extends Control
 
+@onready var space_background: ColorRect = $SpaceBackground
 @onready var lunar_surface = $LunarSurface
+@onready var title_label: Label = $HUD/TopBar/HeaderRow/TitleLabel
+@onready var sector_info_label: Label = $HUD/TopBar/SectorInfoLabel
 @onready var clean_label: Label = $HUD/TopBar/CleanPercentageLabel
 @onready var clean_progress_bar: ProgressBar = $HUD/TopBar/CleanProgressBar
-@onready var money_label: Label = $HUD/TopBar/HeaderRow/MoneyPill/Margin/HBox/MoneyLabel
-@onready var shop_btn: Button = $HUD/TopBar/HeaderRow/ShopBtn
+@onready var money_label: Label = $HUD/TopBar/HeaderRow/RightControls/MoneyPill/Margin/HBox/MoneyLabel
+@onready var shop_btn: Button = $HUD/TopBar/HeaderRow/RightControls/ShopBtn
+@onready var settings_btn: Button = $HUD/TopBar/HeaderRow/RightControls/SettingsBtn
 @onready var dust_label: Label = $HUD/TopBar/DustStorageBox/DustLabel
 @onready var dust_progress_bar: ProgressBar = $HUD/TopBar/DustStorageBox/DustProgressBar
 @onready var storage_warning: Panel = $HUD/TopBar/DustStorageBox/StorageWarning
 @onready var sell_button: Button = $HUD/BottomBar/SellButton
 @onready var completion_banner: Panel = $HUD/CompletionBanner
+@onready var completion_label: Label = $HUD/CompletionBanner/VBox/Label
+@onready var next_sector_button: Button = $HUD/CompletionBanner/VBox/NextSectorButton
 @onready var shop_panel = $ShopPanel
+@onready var settings_panel = $SettingsPanel
 @onready var floating_text_spawn: Marker2D = $HUD/BottomBar/FloatingTextSpawn
+
+var auto_sell_timer: Timer
 
 func _ready() -> void:
 	completion_banner.visible = false
 	shop_panel.visible = false
+	settings_panel.visible = false
 	storage_warning.visible = false
+	
+	_setup_auto_sell_timer()
 	
 	# Connect surface signals
 	lunar_surface.clean_percentage_changed.connect(_on_clean_percentage_changed)
@@ -29,25 +41,51 @@ func _ready() -> void:
 	GameState.dust_changed.connect(_on_dust_changed)
 	GameState.storage_status_changed.connect(_on_storage_status_changed)
 	GameState.upgrade_purchased.connect(_on_upgrade_purchased)
+	GameState.sector_changed.connect(_on_sector_changed)
+	GameState.game_reset.connect(_on_game_reset)
 	
 	# Initial UI refresh
+	_apply_sector_visuals(GameState.current_sector, GameState.get_current_theme())
 	lunar_surface.brush_size = GameState.brush_size
+	lunar_surface.update_bots_count(int(GameState.get_upgrade_current_val("cleaning_bot")))
 	_on_money_changed(GameState.money)
 	_on_dust_changed(GameState.dust, GameState.capacity)
 	_on_storage_status_changed(GameState.is_storage_full)
+
+func _setup_auto_sell_timer() -> void:
+	auto_sell_timer = Timer.new()
+	auto_sell_timer.wait_time = 0.65
+	auto_sell_timer.one_shot = true
+	auto_sell_timer.timeout.connect(_on_auto_sell_triggered)
+	add_child(auto_sell_timer)
+
+func _apply_sector_visuals(sector_num: int, theme: Dictionary) -> void:
+	space_background.color = theme.get("bg_color", Color(0.047, 0.055, 0.09, 1.0))
+	title_label.text = "MOON SWEEPERS"
+	sector_info_label.text = "Sector %02d: %s  •  Cleared: %d" % [sector_num, theme.get("name", "Lunar Sector"), GameState.sectors_cleared]
+	lunar_surface.apply_theme(theme)
+
+func _on_sector_changed(sector_num: int, theme: Dictionary) -> void:
+	completion_banner.visible = false
+	_apply_sector_visuals(sector_num, theme)
+	lunar_surface.reset_surface()
 
 func _on_clean_percentage_changed(percentage: float) -> void:
 	clean_label.text = "Sector Clean: %4.1f%%" % percentage
 	clean_progress_bar.value = percentage
 
 func _on_sector_cleaned() -> void:
+	var bonus: int = GameState.current_sector * 50
+	completion_label.text = "★ SECTOR %02d COMPLETE! ★\nCleaned 95%%+ • Bonus: +$%d" % [GameState.current_sector, bonus]
 	completion_banner.visible = true
+
+func _on_next_sector_pressed() -> void:
+	GameState.advance_to_next_sector()
 
 func _on_dust_scrubbed(amount: float) -> void:
 	GameState.add_dust(amount)
 
 func _on_scrub_blocked() -> void:
-	# Flash storage warning when player attempts to scrub with a full tank
 	_pulse_storage_warning()
 
 func _on_money_changed(new_amount: int) -> void:
@@ -63,12 +101,22 @@ func _on_dust_changed(current: float, capacity: float) -> void:
 func _on_storage_status_changed(is_full: bool) -> void:
 	lunar_surface.can_scrub = not is_full
 	storage_warning.visible = is_full
+	
 	if is_full:
 		_pulse_storage_warning()
+		# Stage 6: Auto-Sell module logic
+		if GameState.upgrades["auto_sell"].level >= 1:
+			auto_sell_timer.start()
+
+func _on_auto_sell_triggered() -> void:
+	if GameState.is_storage_full and GameState.dust > 0.0:
+		_on_sell_button_pressed()
 
 func _on_upgrade_purchased(upgrade_id: String, _level: int) -> void:
 	if upgrade_id == "brush_size":
 		lunar_surface.set_brush_size(GameState.brush_size)
+	elif upgrade_id == "cleaning_bot":
+		lunar_surface.update_bots_count(int(GameState.get_upgrade_current_val("cleaning_bot")))
 
 func _update_sell_button() -> void:
 	var potential_earnings: int = int(floor(GameState.dust)) * GameState.dust_value
@@ -93,11 +141,9 @@ func _spawn_floating_text(text: String) -> void:
 	float_label.add_theme_constant_override("shadow_offset_x", 3)
 	float_label.add_theme_constant_override("shadow_offset_y", 3)
 	
-	# Spawn near the Sell button
 	float_label.position = floating_text_spawn.global_position - Vector2(100, 40)
 	$HUD.add_child(float_label)
 	
-	# Animate upward float and fade out smoothly
 	var tween := create_tween()
 	tween.set_parallel(true)
 	tween.tween_property(float_label, "position:y", float_label.position.y - 140.0, 0.85).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
@@ -114,6 +160,16 @@ func _pulse_storage_warning() -> void:
 func _on_shop_button_pressed() -> void:
 	shop_panel.open_shop()
 
+func _on_settings_button_pressed() -> void:
+	settings_panel.open_settings()
+
 func _on_reset_button_pressed() -> void:
 	completion_banner.visible = false
+	lunar_surface.reset_surface()
+
+func _on_game_reset() -> void:
+	completion_banner.visible = false
+	_apply_sector_visuals(GameState.current_sector, GameState.get_current_theme())
+	lunar_surface.set_brush_size(GameState.brush_size)
+	lunar_surface.update_bots_count(0)
 	lunar_surface.reset_surface()

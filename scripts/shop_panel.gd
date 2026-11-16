@@ -44,6 +44,7 @@ func _create_upgrade_card(data: Dictionary) -> PanelContainer:
 	var cost: int = GameState.get_upgrade_cost(id)
 	var current_val: float = GameState.get_upgrade_current_val(id)
 	var next_val: float = GameState.get_upgrade_next_val(id)
+	var is_max: bool = GameState.is_max_level(id)
 	var can_buy: bool = GameState.can_afford(id)
 	
 	var card := PanelContainer.new()
@@ -82,9 +83,13 @@ func _create_upgrade_card(data: Dictionary) -> PanelContainer:
 	header_hbox.add_child(title_lbl)
 	
 	var lvl_lbl := Label.new()
-	lvl_lbl.text = "Lv. %d" % data.level
+	if is_max:
+		lvl_lbl.text = "MAX (Lv. %d)" % data.level
+		lvl_lbl.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
+	else:
+		lvl_lbl.text = "Lv. %d" % data.level
+		lvl_lbl.add_theme_color_override("font_color", Color(0.4, 0.8, 1.0))
 	lvl_lbl.add_theme_font_size_override("font_size", 30)
-	lvl_lbl.add_theme_color_override("font_color", Color(0.4, 0.8, 1.0))
 	header_hbox.add_child(lvl_lbl)
 	
 	# Description
@@ -97,23 +102,31 @@ func _create_upgrade_card(data: Dictionary) -> PanelContainer:
 	
 	# Stats progression
 	var stats_lbl := Label.new()
-	if data.unit == "🪙/kg":
-		stats_lbl.text = "Effect: %d -> %d %s" % [int(current_val), int(next_val), data.unit]
+	if is_max:
+		stats_lbl.text = "Effect: %d %s (MAX)" % [int(current_val), data.unit]
+		stats_lbl.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
 	else:
 		stats_lbl.text = "Effect: %d -> %d %s" % [int(current_val), int(next_val), data.unit]
+		stats_lbl.add_theme_color_override("font_color", Color(0.45, 0.9, 0.55))
 	stats_lbl.add_theme_font_size_override("font_size", 26)
-	stats_lbl.add_theme_color_override("font_color", Color(0.45, 0.9, 0.55))
 	vbox.add_child(stats_lbl)
 	
 	# Large Thumb-Friendly Buy Button
 	var buy_btn := Button.new()
 	buy_btn.custom_minimum_size = Vector2(0, 84)
-	buy_btn.text = "BUY UPGRADE  •  $%d" % cost
+	if is_max:
+		buy_btn.text = "★ FULLY UPGRADED ★"
+		buy_btn.disabled = true
+	else:
+		buy_btn.text = "BUY UPGRADE  •  $%d" % cost
+		buy_btn.disabled = not can_buy
 	buy_btn.add_theme_font_size_override("font_size", 30)
-	buy_btn.disabled = not can_buy
 	
 	var btn_normal := StyleBoxFlat.new()
-	if can_buy:
+	if is_max:
+		btn_normal.bg_color = Color(0.2, 0.22, 0.28, 0.5)
+		btn_normal.border_color = Color(0.4, 0.45, 0.5, 0.5)
+	elif can_buy:
 		btn_normal.bg_color = Color(0.12, 0.45, 0.28, 1.0)
 		btn_normal.border_color = Color(0.3, 0.8, 0.5, 1.0)
 	else:

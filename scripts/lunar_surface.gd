@@ -1,28 +1,23 @@
 class_name LunarSurface
 extends Control
 
-## Emitted whenever the clean percentage changes.
 signal clean_percentage_changed(percentage: float)
-
-## Emitted when the sector reaches 100% (or completion threshold).
 signal sector_cleaned()
-
-## Emitted with the amount of dust (in kg) gathered from scrubbed pixels.
 signal dust_scrubbed(amount: float)
-
-## Emitted if the player tries to scrub while storage is full.
 signal scrub_blocked()
 
-@export var brush_size: float = 48.0 ## Brush radius in screen pixels
-@export var image_resolution: int = 256 ## Internal resolution for dust layer
-@export var total_sector_dust: float = 350.0 ## Total kg of dust across the entire sector
-@export var can_scrub: bool = true ## Controlled by storage capacity
+@export var brush_size: float = 48.0
+@export var image_resolution: int = 256
+@export var total_sector_dust: float = 350.0
+@export var can_scrub: bool = true
 
-const DUST_COLOR := Color(0.48, 0.44, 0.38, 1.0)
+var current_dust_color := Color(0.48, 0.44, 0.38, 1.0)
 const ERASED_COLOR := Color(0.0, 0.0, 0.0, 0.0)
 
 @onready var dust_rect: TextureRect = $DustLayer
 @onready var bedrock: Control = $Bedrock
+@onready var bedrock_base: ColorRect = $Bedrock/CleanBaseColor
+@onready var bots_container: Control = $BotsContainer
 
 var dust_image: Image
 var dust_texture: ImageTexture
@@ -32,22 +27,96 @@ var is_scrubbing: bool = false
 var last_touch_pos: Vector2 = Vector2.ZERO
 var is_completed: bool = false
 
-func _ready() -> void:
-	_init_dust_layer()
+const BotScene = preload("res://scenes/cleaning_bot.tscn")
 
-func _init_dust_layer() -> void:
+func _ready() -> void:
 	total_pixels = image_resolution * image_resolution
+	apply_theme(GameState.get_current_theme())
+	_init_or_load_dust_layer()
+
+func apply_theme(theme: Dictionary) -> void:
+	current_dust_color = theme.get("dust_color", Color(0.48, 0.44, 0.38, 1.0))
+	total_sector_dust = GameState.get_sector_total_dust()
+	
+	if bedrock_base:
+		bedrock_base.color = theme.get("bedrock_color", Color(0.141, 0.157, 0.204, 1.0))
+	
+	# Update craters
+	var crater_color: Color = theme.get("crater_color", Color(0.082, 0.090, 0.118, 1.0))
+	for crater_name in ["Crater1", "Crater2", "Crater3"]:
+		var crater_node = bedrock.get_node_or_null(crater_name)
+		if crater_node and crater_node is Panel:
+			var sb := crater_node.get_theme_stylebox("panel").duplicate() as StyleBoxFlat
+			if sb:
+				sb.bg_color = crater_color
+				crater_node.add_theme_stylebox_override("panel", sb)
+
+func _init_or_load_dust_layer() -> void:
 	cleaned_pixels = 0
 	is_completed = false
 	
-	dust_image = Image.create(image_resolution, image_resolution, false, Image.FORMAT_RGBA8)
-	dust_image.fill(DUST_COLOR)
+	# Check if saved dust mask exists
+	if FileAccess.file_exists(GameState.DUST_MASK_PATH):
+		dust_image = Image.load_from_file(GameState.DUST_MASK_PATH)
+		if dust_image and dust_image.get_width() == image_resolution:
+			# Count already cleaned pixels
+			for y in range(image_resolution):
+				for x in range(image_resolution):
+					if dust_image.get_pixel(x, y).a <= 0.1:
+						cleaned_pixels += 1
+		else:
+			_create_fresh_dust()
+	else:
+		_create_fresh_dust()
 	
 	dust_texture = ImageTexture.create_from_image(dust_image)
 	dust_rect.texture = dust_texture
 	dust_rect.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
 	
+	var pct: float = get_clean_percentage()
+	clean_percentage_changed.emit(pct)
+	if pct >= 95.0:
+		is_completed = true
+		sector_cleaned.emit()
+
+func _create_fresh_dust() -> void:
+	dust_image = Image.create(image_resolution, image_resolution, false, Image.FORMAT_RGBA8)
+	dust_image.fill(current_dust_color)
+	cleaned_pixels = 0
+
+func save_dust_mask() -> void:
+	if dust_image:
+		dust_image.save_png(GameState.DUST_MASK_PATH)
+
+func reset_surface() -> void:
+	if FileAccess.file_exists(GameState.DUST_MASK_PATH):
+		DirAccess.remove_absolute(GameState.DUST_MASK_PATH)
+	_create_fresh_dust()
+	dust_texture.update(dust_image)
+	is_completed = false
 	clean_percentage_changed.emit(0.0)
+
+func update_bots_count(target_count: int) -> void:
+	if not bots_container:
+		return
+	
+	var clamped_count: int = clampi(target_count, 0, GameState.upgrades["cleaning_bot"].max_level)
+	var current_bots := bots_container.get_children()
+	
+	while current_bots.size() > clamped_count:
+		var bot = current_bots.pop_back()
+		bot.queue_free()
+	
+	while current_bots.size() < clamped_count:
+		var new_bot = BotScene.instantiate()
+		bots_container.add_child(new_bot)
+		current_bots.append(new_bot)
+
+## Called by autonomous cleaning bots to sweep an area
+func bot_scrub_at(local_pos: Vector2, radius: float) -> void:
+	if not can_scrub or is_completed:
+		return
+	_apply_brush_erase(local_pos, radius)
 
 func _gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton:
@@ -100,12 +169,15 @@ func _scrub_line(from: Vector2, to: Vector2) -> void:
 		_scrub_at(from.lerp(to, t))
 
 func _scrub_at(local_pos: Vector2) -> void:
+	_apply_brush_erase(local_pos, brush_size)
+
+func _apply_brush_erase(local_pos: Vector2, radius_px: float) -> void:
 	if size.x <= 0 or size.y <= 0 or not can_scrub:
 		return
 	
 	var center_x: float = (local_pos.x / size.x) * float(image_resolution)
 	var center_y: float = (local_pos.y / size.y) * float(image_resolution)
-	var radius_in_img: float = (brush_size / size.x) * float(image_resolution)
+	var radius_in_img: float = (radius_px / size.x) * float(image_resolution)
 	
 	var r_ceil: int = int(ceil(radius_in_img))
 	var r_sq: float = radius_in_img * radius_in_img
@@ -133,12 +205,12 @@ func _scrub_at(local_pos: Vector2) -> void:
 		var percentage: float = (float(cleaned_pixels) / float(total_pixels)) * 100.0
 		clean_percentage_changed.emit(percentage)
 		
-		# Calculate dust amount based on pixels erased
 		var dust_per_pixel: float = total_sector_dust / float(total_pixels)
 		var dust_gained: float = float(pixels_erased_this_stamp) * dust_per_pixel
 		dust_scrubbed.emit(dust_gained)
 		
-		if percentage >= 98.0 and not is_completed:
+		# Stage 7 threshold: 95% clean completes sector!
+		if percentage >= 95.0 and not is_completed:
 			is_completed = true
 			sector_cleaned.emit()
 
@@ -149,6 +221,3 @@ func get_clean_percentage() -> float:
 
 func set_brush_size(new_size: float) -> void:
 	brush_size = maxf(10.0, new_size)
-
-func reset_surface() -> void:
-	_init_dust_layer()
